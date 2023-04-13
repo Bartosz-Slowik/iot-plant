@@ -1,18 +1,19 @@
 # iot-plant
+
 Made for 2023 ZDPAI class.
-
-WIll be made with React and Node.js with Express.js
-
+Its using  React with @MaterialUi and Node.js with Express.js
 Pot prototype is made with ESP8266
 
-# how to run?
-use git clone then 
-### `npm i`
-to install and
-### `npm start`
-to Run the app in the development mode.\
+## How to run this app:
+app requires Node.js so verify you have it installed:
+``` node -v ```
+clone the app:
+``` git clone git@github.com:Bartosz-Slowik/iot-plant.git```
+install all dependencies
+``` npm i```
+and then
+``` npm start```
+
+to Run the app in the development mode.
+
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
