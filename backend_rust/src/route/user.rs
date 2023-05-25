@@ -14,13 +14,7 @@ use crate::{
 pub struct NewUser {
     email: String,
     password: String,
-    roles: String,
-    name: Option<String>,
-    surname: Option<String>,
-}
-
-#[derive(serde::Deserialize)]
-pub struct UpdateUser {
+    role_id: String,
     name: Option<String>,
     surname: Option<String>,
 }
@@ -63,7 +57,7 @@ pub async fn post(
 ) -> Result<Json<db::users::Data>> {
     let user = db
         .users()
-        .create(input.email, input.password, input.roles, vec![])
+        .create(input.email, input.password, db::roles::UniqueWhereParam::RoleIdEquals(input.role_id), vec![db::users::name::set(input.name), db::users::surname::set(input.surname)])
         .exec()
         .await
         .wrap_err("Failed to insert new user into the database")?;

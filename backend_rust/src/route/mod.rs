@@ -1,5 +1,6 @@
 pub mod health;
 pub mod user;
+pub mod plants;
 
 use axum::{http::StatusCode, response::IntoResponse};
 
