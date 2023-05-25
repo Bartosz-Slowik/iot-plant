@@ -1,5 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
+/backend_rust/.env
+/backend_rust/target
+/backend_rust/src/db.rs
 
 # dependencies
 /node_modules
