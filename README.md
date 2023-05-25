@@ -7,4 +7,4 @@ Pot prototype is made with ESP8266
 ## How to run this app:
 To tun this app you need to create .env files with db url as well as generate db.rs with prisma
 
-To run frontend you start a ract server
+To run frontend you start a react server
