@@ -16,30 +16,33 @@ model Plants {
   Users     Users    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "Plants_Users_user_id_fk")
 }
 
-model Roles {
-  role_id String  @id @default(uuid())
-  role    String? @db.VarChar
-  Users   Users[]
-}
 
 model Users {
   user_id  String   @id @default(dbgenerated("gen_random_uuid()"))
-  email    String   @db.VarChar(255)
+  email    String   @db.VarChar(255) @unique
   password String   @db.VarChar(255)
   name     String?  @db.VarChar(255)
   surname  String?  @db.VarChar(255)
-  role_id  String   @default(uuid())
   Plants   Plants[]
-  Roles    Roles    @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "role_id")
 }
 
 model Devices {
-  device_id String   @id(map: "Device_pkey") @default(dbgenerated("gen_random_uuid()"))
-  wetness   Int?
-  red       BigInt?  @default(0)
-  green     BigInt?  @default(0)
-  blue      BigInt?  @default(0)
-  name      String?  @db.VarChar
-  trigger   Int?
-  Plants    Plants[]
+  device_id    String         @id @default(dbgenerated("gen_random_uuid()"))
+  wetness      Int?
+  red          BigInt?        @default(0)
+  green        BigInt?        @default(0)
+  blue         BigInt?        @default(0)
+  name         String?        @db.VarChar(255)
+  trigger      Int?
+  description  String?        @db.VarChar(255)
+  Plants       Plants[]
+  PlantHistory PlantHistory[]
+}
+
+model PlantHistory {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  date      DateTime @default(now())
+  wetness   Int
+  device_id String
+  device    Devices  @relation(fields: [device_id], references: [device_id])
 }
