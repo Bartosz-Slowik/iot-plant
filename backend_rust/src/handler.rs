@@ -36,7 +36,7 @@ pub async fn register_user_handler(
     State(data): State<Arc<AppState>>,
     Json(body): Json<RegisterUserSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    dbg!(&body);
+    
     let user_exists: Option<User> = data
             .prisma
             .users()
@@ -91,6 +91,7 @@ pub async fn login_handler(
     State(data): State<Arc<AppState>>,
     Json(body): Json<LoginUserSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    dbg!(&body);
     let user = data
         .prisma
         .users()
@@ -119,14 +120,14 @@ pub async fn login_handler(
             "status": "fail",
             "message": "Invalid email or password"
         });
-        return Err((StatusCode::BAD_REQUEST, Json(error_response)));
+        return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
     }
 
     let now = chrono::Utc::now();
     let iat = now.timestamp() as usize;
     let exp = (now + chrono::Duration::minutes(60)).timestamp() as usize;
     let claims: TokenClaims = TokenClaims {
-        sub: user.user_id.to_string(),
+        sub: user.user_id,
         exp,
         iat,
     };
