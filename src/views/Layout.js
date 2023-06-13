@@ -30,11 +30,11 @@ const Layout = ({ children }) => {
 
   const handleSignOut = () => {
     localStorage.removeItem('token');
-    navigate("/signin");
+    navigate("/SignIn");
   };
 
   if (!token) {
-    return <Navigate to="/signin" />;
+    return <Navigate to="/SignIn"/>;
   }
 
   try {

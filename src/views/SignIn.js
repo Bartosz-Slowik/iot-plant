@@ -31,26 +31,38 @@ function authenticate(credentials) {
   //return Promise.resolve({ token: 'dummy_token' });
 }
 
-export default function SignInSide() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    
-    // Call the authenticate function to get the JWT token
-    authenticate({ email, password })
-      .then((data) => {
-        // Store the token in localStorage or a secure storage method of your choice
-        localStorage.setItem('token', data.token);
-
-        // Redirect or perform any other action upon successful authentication
-        console.log('Authentication successful');
-      })
-      .catch((error) => {
-        console.error('Authentication failed', error);
-      });
-  };
+  export default function SignInSide() {
+    const handleSubmit = async (event) => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      const userData = {
+        email: data.get('email'),
+        password: data.get('password'),
+      };
+      console.log(userData);
+  
+      try {
+        const response = await fetch('http://localhost:8000/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        });
+        console.log(response);
+        if (response.ok) {
+          const tokenData = await response.json();
+          localStorage.setItem('token', tokenData.token);
+          console.log('Authentication successful');
+          // Redirect or perform any other action upon successful authentication
+        } else {
+          console.error('Authentication failed.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
 
   return (
     <Grid container component="main" sx={{ height: '100vh' }}>
@@ -97,8 +109,6 @@ export default function SignInSide() {
               name="email"
               autoComplete="email"
               autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
             />
             <TextField
               margin="normal"
@@ -109,8 +119,6 @@ export default function SignInSide() {
               type="password"
               id="password"
               autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
             />
             <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}

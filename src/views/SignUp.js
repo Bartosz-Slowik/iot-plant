@@ -35,6 +35,7 @@ function SignUp() {
       if (response.ok) {
         const tokenData = await response.json();
         localStorage.setItem('token', tokenData.token);
+        window.location.reload(true);
         // Redirect or perform any other action
       } else {
         console.error('Sign up failed.');
