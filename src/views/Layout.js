@@ -1,178 +1,103 @@
-import * as React from 'react';
-import { Outlet } from 'react-router-dom';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
-import Container from '@mui/material/Container';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Navigate } from 'react-router-dom';
+import {
+  AppBar,
+  Box,
+  Button,
+  Container,
+  IconButton,
+  Menu,
+  MenuItem,
+  Toolbar,
+  Tooltip,
+  Typography
+} from '@mui/material';
+import AccountCircle from '@mui/icons-material/AccountCircle';
 
-const pages = ['AddPlant', 'MyPlants', 'Store', 'About'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const Layout = ({ children }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
 
-function Layout() {
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
   const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
+    setAnchorEl(event.currentTarget);
   };
 
   const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
+    setAnchorEl(null);
   };
 
-  return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Container maxWidth="xl">
-          <Toolbar disableGutters>
-            <Avatar alt="logo2" src="./images/logo2.png" />
-            <Typography
-              variant="h6"
-              noWrap
-              component="a"
-              href="/"
-              sx={{
-                mr: 2,
-                ml: 2,
-                display: { xs: 'none', md: 'flex' },
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                letterSpacing: '.3rem',
-                color: 'inherit',
-                textDecoration: 'none',
-              }}
-            >
-              iot-plant
-            </Typography>
+  const handleSignOut = () => {
+    localStorage.removeItem('token');
+    navigate("/signin");
+  };
 
-            <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+  if (!token) {
+    return <Navigate to="/signin" />;
+  }
+
+  try {
+    return (
+      <Box sx={{ flexGrow: 1 }}>
+        <AppBar position="static">
+          <Container>
+            <Toolbar>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                My App
+              </Typography>
+              <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+                <Button
+                  onClick={() => navigate("/myplants")}
+                  sx={{ my: 2, color: 'white', display: 'block', mr: 2 }}
+                >
+                  My Plants
+                </Button>
+                <Button
+                  onClick={() => navigate("/plant")}
+                  sx={{ my: 2, color: 'white', display: 'block', mr: 2 }}
+                >
+                  Plant
+                </Button>
+                <Button
+                  onClick={() => navigate("/planthistory")}
+                  sx={{ my: 2, color: 'white', display: 'block', mr: 2 }}
+                >
+                  Plant History
+                </Button>
+              </Box>
               <IconButton
                 size="large"
+                edge="end"
                 aria-label="account of current user"
-                aria-controls="menu-appbar"
                 aria-haspopup="true"
-                onClick={handleOpenNavMenu}
+                onClick={handleOpenUserMenu}
                 color="inherit"
               >
-                <Avatar
-                  alt="logo"
-                  src="./images/logo.png"
-                  sx={{ width: 50, height: 50 }}
-                />
+                <AccountCircle />
               </IconButton>
               <Menu
-                id="menu-appbar"
-                anchorEl={anchorElNav}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'left',
-                }}
-                open={Boolean(anchorElNav)}
-                onClose={handleCloseNavMenu}
-                sx={{
-                  display: { xs: 'block', md: 'none' },
-                }}
-              >
-                {pages.map((page) => (
-                  <MenuItem key={page} onClick={handleCloseNavMenu}>
-                    <Typography textAlign="center">{page}</Typography>
-                  </MenuItem>
-                ))}
-              </Menu>
-            </Box>
-            <AdbIcon
-              sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}
-            />
-            <Typography
-              variant="h5"
-              noWrap
-              component="a"
-              href=""
-              sx={{
-                mr: 2,
-                ml: 1,
-                display: { xs: 'flex', md: 'none' },
-                flexGrow: 1,
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                letterSpacing: '.3rem',
-                color: 'inherit',
-                textDecoration: 'none',
-              }}
-            >
-              iot-plant
-            </Typography>
-            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-              {pages.map((page) => (
-                <Button
-                  key={page}
-                  onClick={handleCloseNavMenu}
-                  sx={{ my: 2, color: 'white', display: 'block' }}
-                >
-                  {page}
-                </Button>
-              ))}
-            </Box>
-
-            <Box sx={{ flexGrow: 0 }}>
-              <Tooltip title="Open settings">
-                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar
-                    alt="Remy Sharp"
-                    src="/static/images/avatar/2.jpg"
-                  />
-                </IconButton>
-              </Tooltip>
-              <Menu
-                sx={{ mt: '45px' }}
-                id="menu-appbar"
-                anchorEl={anchorElUser}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorElUser)}
+                id="user-menu"
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
                 onClose={handleCloseUserMenu}
               >
-                {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography textAlign="center">{setting}</Typography>
-                  </MenuItem>
-                ))}
+                <MenuItem onClick={handleSignOut}>
+                  <Typography textAlign="center">Sign Out</Typography>
+                </MenuItem>
               </Menu>
-            </Box>
-          </Toolbar>
-        </Container>
-      </AppBar>
-      <Box sx={{ mt: 8 }}>
-        <Outlet />
+            </Toolbar>
+          </Container>
+        </AppBar>
+        <Box sx={{ mt: 8 }}>
+          {children}
+        </Box>
       </Box>
-    </Box>
-  );
-}
+    );
+  } catch (err) {
+    localStorage.removeItem('token');
+    return <Navigate to="/SignIn" />;
+  }
+};
+
 export default Layout;
