@@ -7,10 +7,7 @@ use axum::{
 };
 
 use crate::{
-    handler::{
-        get_me_handler, health_checker_handler, login_handler, logout_handler,
-        register_user_handler,
-    },
+    handler::*,
     jwt_auth::auth,
     AppState,
 };
@@ -30,5 +27,35 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
             get(get_me_handler)
                 .route_layer(middleware::from_fn_with_state(app_state.clone(), auth)),
         )
+        .route(
+            "/api/myplants",
+            get(get_devices_handler)
+                .route_layer(middleware::from_fn_with_state(app_state.clone(), auth)),
+        )
+        .route(
+            "/api/plant/:id",
+            get(get_device_handler)
+                .route_layer(middleware::from_fn_with_state(app_state.clone(), auth)),
+        )
+        .route(
+            "/api/plant/:id",
+            post(update_device_handler)
+                .route_layer(middleware::from_fn_with_state(app_state.clone(), auth)),
+        )
+        .route(
+            "/api/newplant",
+            post(create_device_handler)
+                .route_layer(middleware::from_fn_with_state(app_state.clone(), auth)),
+        )
+        .route(
+            "/api/planthistory/:id",
+            get(get_device_history_handler)
+                .route_layer(middleware::from_fn_with_state(app_state.clone(), auth)),
+        )
+        .route(
+            "/api/planthistory/:id",
+            post(add_device_history_handler),
+        )
         .with_state(app_state)
+        
 }

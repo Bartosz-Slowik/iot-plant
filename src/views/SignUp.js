@@ -10,6 +10,7 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import Cookies from 'js-cookie';
 
 function SignUp() {
   const handleSubmit = async (event) => {
@@ -35,7 +36,8 @@ function SignUp() {
       if (response.ok) {
         const tokenData = await response.json();
         localStorage.setItem('token', tokenData.token);
-        window.location.reload(true);
+        Cookies.set('token', data.token, { expires: 7 }); // Set the token in a cookie that expires in 7 days
+        window.location.href = '/'; 
         // Redirect or perform any other action
       } else {
         console.error('Sign up failed.');

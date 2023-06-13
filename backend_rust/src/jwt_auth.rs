@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use axum::{
     extract::State,
     http::{header, Request, StatusCode},
@@ -9,12 +8,9 @@ use axum::{
 use axum_extra::extract::cookie::CookieJar;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::Serialize;
+use std::sync::Arc;
 
-
-use crate::{
-    model::TokenClaims,
-    AppState,
-};
+use crate::{model::TokenClaims, AppState};
 
 #[derive(Debug, Serialize)]
 pub struct ErrorResponse {
@@ -28,6 +24,7 @@ pub async fn auth<B>(
     mut req: Request<B>,
     next: Next<B>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
+    dbg!(&cookie_jar);
     let token = cookie_jar
         .get("token")
         .map(|cookie| cookie.value().to_string())
@@ -74,13 +71,15 @@ pub async fn auth<B>(
         (StatusCode::UNAUTHORIZED, Json(json_error))
     })?;
 
-    let user = get_user_by_id(&data.prisma, &user_id.to_string()).await.map_err(|e| {
-        let json_error = ErrorResponse {
-            status: "fail",
-            message: format!("Error fetching user from database: {}", e),
-        };
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(json_error))
-    })?;
+    let user = get_user_by_id(&data.prisma, &user_id.to_string())
+        .await
+        .map_err(|e| {
+            let json_error = ErrorResponse {
+                status: "fail",
+                message: format!("Error fetching user from database: {}", e),
+            };
+            (StatusCode::INTERNAL_SERVER_ERROR, Json(json_error))
+        })?;
 
     let user = user.ok_or_else(|| {
         let json_error = ErrorResponse {

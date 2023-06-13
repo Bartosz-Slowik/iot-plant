@@ -10,39 +10,22 @@ import PlantHistory from './views/PlantHistory';
 
 export default function App() {
   const isAuthenticated = !!localStorage.getItem('token');
+  console.log('Is Auth:', localStorage.getItem('token'));
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          index
-          element={isAuthenticated ? <Navigate to="/MyPlants" /> : <SignIn />}
-        />
+        <Route index element={<SignIn />} />
         <Route path="SignUp" element={<SignUp />} />
-        <Route
-          path="/"
-          element={
-            isAuthenticated ? (
-              <Layout />
-            ) : (
-              <Navigate to="/" replace state={{ from: '/' }} />
-            )
-          }
-        >
-          {isAuthenticated ? (
-            <>
-              <Route path="MyPlants" element={<MyPlants />} />
-              <Route path="Plant" element={<Plant />} />
-              <Route path="PlantHistory" element={<PlantHistory />} />
-            </>
-          ) : (
-            <Route path="*" element={<Page404 />} />
-          )}
+        <Route path="/" element={<Layout />}>
+          <Route path="MyPlants" element={<MyPlants />} />
+          <Route path="Plant" element={<Plant />} />
+          <Route path="PlantHistory" element={<PlantHistory />} />
+          <Route path="*" element={<Page404 />} />
         </Route>
       </Routes>
     </BrowserRouter>
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+//ReactDOM.render(<App />, document.getElementById('root'));

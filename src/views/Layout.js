@@ -1,103 +1,120 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Navigate } from 'react-router-dom';
-import {
-  AppBar,
-  Box,
-  Button,
-  Container,
-  IconButton,
-  Menu,
-  MenuItem,
-  Toolbar,
-  Tooltip,
-  Typography
-} from '@mui/material';
+import * as React from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import Menu from '@mui/material/Menu';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
+import MenuItem from '@mui/material/MenuItem';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import Container from '@mui/material/Container';
 
-const Layout = ({ children }) => {
-  const [anchorEl, setAnchorEl] = useState(null);
+const pages = ['AddPlant', 'MyPlants', 'Store', 'About'];
+const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+
+function Layout() {
+  const [anchorElNav, setAnchorElNav] = React.useState(null);
+  const [anchorElUser, setAnchorElUser] = React.useState(null);
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
 
+  const handleOpenNavMenu = (event) => {
+    setAnchorElNav(event.currentTarget);
+  };
   const handleOpenUserMenu = (event) => {
-    setAnchorEl(event.currentTarget);
+    setAnchorElUser(event.currentTarget);
+  };
+
+  const handleCloseNavMenu = () => {
+    setAnchorElNav(null);
   };
 
   const handleCloseUserMenu = () => {
-    setAnchorEl(null);
+    setAnchorElUser(null);
   };
 
   const handleSignOut = () => {
     localStorage.removeItem('token');
-    navigate("/SignIn");
+    navigate('/SignIn');
   };
 
-  if (!token) {
-    return <Navigate to="/SignIn"/>;
-  }
-
-  try {
-    return (
-      <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
-          <Container>
-            <Toolbar>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                My App
-              </Typography>
-              <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                <Button
-                  onClick={() => navigate("/myplants")}
-                  sx={{ my: 2, color: 'white', display: 'block', mr: 2 }}
-                >
-                  My Plants
-                </Button>
-                <Button
-                  onClick={() => navigate("/plant")}
-                  sx={{ my: 2, color: 'white', display: 'block', mr: 2 }}
-                >
-                  Plant
-                </Button>
-                <Button
-                  onClick={() => navigate("/planthistory")}
-                  sx={{ my: 2, color: 'white', display: 'block', mr: 2 }}
-                >
-                  Plant History
-                </Button>
-              </Box>
-              <IconButton
-                size="large"
-                edge="end"
-                aria-label="account of current user"
-                aria-haspopup="true"
-                onClick={handleOpenUserMenu}
-                color="inherit"
+  return (
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static">
+        <Container>
+          <Toolbar>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              color="inherit"
+            >
+              <Avatar
+                alt="logo"
+                src="./images/logo.png"
+                sx={{ width: 50, height: 50 }}
+              />
+            </IconButton>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              IOT-PLANT
+            </Typography>
+            <Box
+              sx={{
+                flexGrow: 1,
+                display: { xs: 'none', md: 'flex' },
+              }}
+            >
+              <Button
+                onClick={() => navigate('/my-plants')}
+                sx={{ my: 2, color: 'white', display: 'block', mr: 2 }}
               >
-                <AccountCircle />
-              </IconButton>
-              <Menu
-                id="user-menu"
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleCloseUserMenu}
+                My Plants
+              </Button>
+              <Button
+                onClick={() => navigate('/plant')}
+                sx={{ my: 2, color: 'white', display: 'block', mr: 2 }}
               >
-                <MenuItem onClick={handleSignOut}>
-                  <Typography textAlign="center">Sign Out</Typography>
-                </MenuItem>
-              </Menu>
-            </Toolbar>
-          </Container>
-        </AppBar>
-        <Box sx={{ mt: 8 }}>
-          {children}
-        </Box>
+                Plant
+              </Button>
+              <Button
+                onClick={() => navigate('/plant-history')}
+                sx={{ my: 2, color: 'white', display: 'block', mr: 2 }}
+              >
+                Plant History
+              </Button>
+            </Box>
+            <IconButton
+              size="large"
+              edge="end"
+              aria-label="account of current user"
+              aria-haspopup="true"
+              onClick={handleOpenUserMenu}
+              color="inherit"
+            >
+              <AccountCircle />
+            </IconButton>
+            <Menu
+              id="user-menu"
+              anchorEl={anchorElUser}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
+            >
+              <MenuItem onClick={handleSignOut}>
+                <Typography textAlign="center">Sign Out</Typography>
+              </MenuItem>
+            </Menu>
+          </Toolbar>
+        </Container>
+      </AppBar>
+      <Box sx={{ mt: 8 }}>
+        <Outlet />
       </Box>
-    );
-  } catch (err) {
-    localStorage.removeItem('token');
-    return <Navigate to="/SignIn" />;
-  }
-};
+    </Box>
+  );
+}
 
 export default Layout;

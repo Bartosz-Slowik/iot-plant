@@ -9,32 +9,6 @@ import Button from '@mui/material/Button';
 import { SliderPicker } from 'react-color';
 
 function Plant() {
-
-
-  ///
-  const get_me = async () => {
-    console.log(document.token);
-    try {
-      const response = await fetch('http://localhost:8000/api/users/me', {
-        credentials: "include"
-    });
-      const data = await response.json();
-      console.log(data);
-    } catch (error) {
-      console.error(error);
-      // Handle the error here, e.g. by showing an error message to the user
-    }
-  };
-  
-  get_me();
-
-
-
-
-  ///
-
-
-
   const [plantData, setPlantData] = React.useState({
     name: 'Monstera Deliciosa',
     description:
@@ -53,9 +27,24 @@ function Plant() {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(plantData);
+
+    // Send a POST request to the API to add the new plant
+    const response = await fetch('/api/plants', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(plantData),
+    });
+
+    // Check if the request was successful
+    if (response.ok) {
+      console.log('Plant added successfully!');
+    } else {
+      console.error('Failed to add plant');
+    }
   };
 
   return (

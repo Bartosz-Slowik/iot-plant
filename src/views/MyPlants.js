@@ -11,18 +11,25 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 export default function MyPlants() {
-  const [plants, setPlants] = React.useState([]);
+  console.log('MyPlants');
+  const [plants_list, setPlants] = React.useState([]);
 
   React.useEffect(() => {
     const fetchPlants = async () => {
-      const response = await fetch('http://localhost:3333/plants/c58c7e37-b53b-4417-a7c5-ffea3d47b566');
-      const data = await response.json();
-      setPlants(data);
+      try {
+        const response = await fetch('http://localhost:8000/api/myplants', {
+          credentials: "include"
+      });
+        const data = await response.json();
+        setPlants(data);
+      } catch (error) {
+        console.error(error);
+        // Handle the error here, e.g. by showing an error message to the user
+      }
     };
-  
+    
     fetchPlants();
   }, []);
-
   return (
     <Box sx={{ flexGrow: 1 }}>
       <main>
@@ -45,7 +52,7 @@ export default function MyPlants() {
         </Box>
         <Container sx={{ py: 8 }} maxWidth="md">
           <Grid container spacing={4}>
-            {plants.map((plant) => (
+            {plants_list.map((plant) => (
               <Grid item key={plant.id} xs={12} sm={6} md={4}>
                 <Card
                   sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}

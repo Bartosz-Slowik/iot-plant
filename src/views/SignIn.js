@@ -11,6 +11,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
+import Cookies from 'js-cookie';
 
 // Function to handle JWT authentication
 function authenticate(credentials) {
@@ -54,6 +55,7 @@ function authenticate(credentials) {
         if (response.ok) {
           const tokenData = await response.json();
           localStorage.setItem('token', tokenData.token);
+          Cookies.set('token', tokenData.token, { expires: 7 });
           console.log('Authentication successful');
           // Redirect or perform any other action upon successful authentication
         } else {

@@ -1,25 +1,23 @@
-use std::sync::Arc;
 use argon2::{password_hash::SaltString, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum::{
     extract::State,
     http::{header, Response, StatusCode},
     response::IntoResponse,
     Extension, Json,
+    extract::Path,
 };
 use axum_extra::extract::cookie::{Cookie, SameSite};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use rand_core::OsRng;
 use serde_json::json;
+use std::sync::Arc;
 
 use crate::{
-    model::{LoginUserSchema, RegisterUserSchema, TokenClaims},
-    AppState,
-    db::users::Data as User,   
     db,
+    db::users::Data as User,
+    model::*,
+    AppState,
 };
-
-
-
 
 pub async fn health_checker_handler() -> impl IntoResponse {
     const MESSAGE: &str = "JWT Authentication in Rust using Axum, Postgres, and Prisma";
@@ -36,16 +34,22 @@ pub async fn register_user_handler(
     State(data): State<Arc<AppState>>,
     Json(body): Json<RegisterUserSchema>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    
     let user_exists: Option<User> = data
-            .prisma
-            .users()
-            .find_unique(db::users::email::equals(body.email.to_string().to_ascii_lowercase()))
-            .exec()
-            .await
-            .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({ "error lol": err.to_string() }))))?;
+        .prisma
+        .users()
+        .find_unique(db::users::email::equals(
+            body.email.to_string().to_ascii_lowercase(),
+        ))
+        .exec()
+        .await
+        .map_err(|err| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "error lol": err.to_string() })),
+            )
+        })?;
 
-        if user_exists.is_some() {
+    if user_exists.is_some() {
         let error_response = serde_json::json!({
             "status": "fail",
             "message": "User with that email already exists",
@@ -66,10 +70,17 @@ pub async fn register_user_handler(
         })
         .map(|hash| hash.to_string())?;
 
-        let user = data
+    let user = data
         .prisma
         .users()
-        .create(body.email, hashed_password,vec![db::users::name::set(body.firstname), db::users::surname::set(body.surname)])
+        .create(
+            body.email,
+            hashed_password,
+            vec![
+                db::users::name::set(body.firstname),
+                db::users::surname::set(body.surname),
+            ],
+        )
         .exec()
         .await
         .map_err(|e| {
@@ -95,10 +106,17 @@ pub async fn login_handler(
     let user = data
         .prisma
         .users()
-        .find_unique(db::users::email::equals(body.email.to_string().to_ascii_lowercase()))
+        .find_unique(db::users::email::equals(
+            body.email.to_string().to_ascii_lowercase(),
+        ))
         .exec()
         .await
-        .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({ "db error": err.to_string() }))))?
+        .map_err(|err| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "db error": err.to_string() })),
+            )
+        })?
         .ok_or_else(|| {
             let error_response = serde_json::json!({
                 "status": "fail",
@@ -120,7 +138,7 @@ pub async fn login_handler(
             "status": "fail",
             "message": "Invalid email or password"
         });
-        return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(error_response)));
+        return Err((StatusCode::BAD_REQUEST, Json(error_response)));
     }
 
     let now = chrono::Utc::now();
@@ -180,3 +198,176 @@ pub async fn get_me_handler(
 
     Ok(Json(json_response))
 }
+
+pub async fn get_devices_handler(
+    State(data): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let devices = data
+        .prisma
+        .devices()
+        .find_many(vec![db::devices::user_id::equals(user.user_id)])
+        .exec()
+        .await
+        .map_err(|err| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "db error": err.to_string() })),
+            )
+        })?;
+    Ok(Json(devices))
+}
+
+pub async fn get_device_handler(
+    State(data): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+    Path(device_id): Path<i32>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let device = data
+        .prisma
+        .devices()
+        .find_one(db::devices::device_id::equals(device_id).and(db::devices::user_id::equals(user.user_id)))
+        .exec()
+        .await
+        .map_err(|err| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "db error": err.to_string() })),
+            )
+        })?;
+
+    if let Some(device) = device {
+        Ok(Json(device))
+    } else {
+        Err((
+            StatusCode::NOT_FOUND,
+            Json(json!({ "error": "device not found" })),
+        ))
+    }
+}
+pub async fn create_device_handler(
+    State(data): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+    Json(new_device): Json<NewDeviceRequest>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+
+    let created_device = data
+        .prisma
+        .devices()
+        .create(
+            new_device.device_number.clone(),
+            user.user_id.clone(),
+            new_device.wetness,
+            new_device.red,
+            new_device.green,
+            new_device.blue,
+            new_device.name.clone(),
+            new_device.trigger,
+            new_device.description.clone(),
+        )
+        .await
+        .map_err(|err| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "db error": err.to_string() })),
+            )
+        })?;
+
+    Ok(Json(created_device))
+}
+pub async fn get_device_history_handler(
+    State(data): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+    Path(device_id): Path<i32>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let device = data
+        .prisma
+        .devices()
+        .find_one(
+            db::devices::device_id
+                ::equals(device_id)
+                .and(db::devices::user_id::equals(user.user_id)),
+        )
+        .await
+        .map_err(|err| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "db error": err.to_string() })),
+            )
+        })?;
+
+    if let Some(device) = device {
+        let history = data
+            .prisma
+            .plant_history()
+            .filter(db::plant_history::device_id::equals(device.id))
+            .limit(100)
+            .select()
+            .map_err(|err| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({ "db error": err.to_string() })),
+                )
+            })
+            .await?;
+
+        Ok(Json(history))
+    } else {
+        Err((
+            StatusCode::NOT_FOUND,
+            Json(json!({ "error": "device not found" })),
+        ))
+    }
+}
+pub async fn add_device_history_handler(
+    State(data): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+    Path(device_id): Path<i32>,
+    Json(new_history): Json<NewPlantHistoryRequest>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let device = data
+        .prisma
+        .devices()
+        .find_one(db::devices::device_id::equals(device_id).and(db::devices::user_id::equals(user.user_id)))
+        .await
+        .map_err(|err| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "db error": err.to_string() })),
+            )
+        })?;
+
+    if let Some(device) = device {
+        let history = db::NewPlantHistory {
+            device_id: device.id,
+            temperature: new_history.temperature,
+            humidity: new_history.humidity,
+            light: new_history.light,
+        };
+
+        let created_history = data
+            .prisma
+            .plant_history()
+            .create(&history)
+            .await
+            .map_err(|err| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({ "db error": err.to_string() })),
+                )
+            })?;
+
+        Ok(Json(created_history))
+    } else {
+        Err((
+            StatusCode::NOT_FOUND,
+            Json(json!({ "error": "device not found" })),
+        ))
+    }
+}
+
+
+
+
+
+

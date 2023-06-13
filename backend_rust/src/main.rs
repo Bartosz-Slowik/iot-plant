@@ -4,6 +4,8 @@ mod jwt_auth;
 mod model;
 mod response;
 mod router;
+
+#[allow(warnings)]
 mod db;
 
 use db::PrismaClient;
@@ -20,9 +22,6 @@ use dotenv::dotenv;
 use router::create_router;
 use tower_http::cors::CorsLayer;
 
-
-
-
 #[derive(Debug)]
 pub struct AppState {
     prisma: PrismaClient,
@@ -36,15 +35,15 @@ async fn main() {
     let config = Config::init();
 
     let db = db::new_client()
-            .await
-            .wrap_err("Failed to create Prisma client").unwrap();
+        .await
+        .wrap_err("Failed to create Prisma client")
+        .unwrap();
 
     let cors = CorsLayer::new()
         .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
         .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
         .allow_credentials(true)
         .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
-
 
     let app = create_router(Arc::new(AppState {
         prisma: db,

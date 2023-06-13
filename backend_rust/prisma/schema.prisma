@@ -8,26 +8,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Plants {
-  plant_id  String   @id @default(dbgenerated("gen_random_uuid()"))
-  user_id   String
-  device_id String?
-  Device    Devices? @relation(fields: [device_id], references: [device_id], onDelete: NoAction, onUpdate: NoAction, map: "Plants_Esps_esp_id_fk")
-  Users     Users    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "Plants_Users_user_id_fk")
-}
-
-
 model Users {
   user_id  String   @id @default(dbgenerated("gen_random_uuid()"))
   email    String   @db.VarChar(255) @unique
   password String   @db.VarChar(255)
   name     String?  @db.VarChar(255)
   surname  String?  @db.VarChar(255)
-  Plants   Plants[]
+  Devices  Devices[]
 }
 
 model Devices {
   device_id    String         @id @default(dbgenerated("gen_random_uuid()"))
+  device_number String        @unique
+  user_id      String
   wetness      Int?
   red          BigInt?        @default(0)
   green        BigInt?        @default(0)
@@ -35,8 +28,8 @@ model Devices {
   name         String?        @db.VarChar(255)
   trigger      Int?
   description  String?        @db.VarChar(255)
-  Plants       Plants[]
   PlantHistory PlantHistory[]
+  Users        Users          @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "Devices_Users_user_id_fk")
 }
 
 model PlantHistory {
