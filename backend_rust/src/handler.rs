@@ -221,12 +221,16 @@ pub async fn get_devices_handler(
 pub async fn get_device_handler(
     State(data): State<Arc<AppState>>,
     Extension(user): Extension<User>,
-    Path(device_id): Path<i32>,
+    Path(device_id): Path<String>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    dbg!(&device_id);
     let device = data
         .prisma
         .devices()
-        .find_one(db::devices::device_id::equals(device_id).and(db::devices::user_id::equals(user.user_id)))
+        .find_first(vec![
+            db::devices::device_id::equals(device_id.to_string()),
+            db::devices::user_id::equals(user.user_id)
+        ])
         .exec()
         .await
         .map_err(|err| {
@@ -245,26 +249,32 @@ pub async fn get_device_handler(
         ))
     }
 }
+
+#[axum::debug_handler]
 pub async fn create_device_handler(
     State(data): State<Arc<AppState>>,
     Extension(user): Extension<User>,
-    Json(new_device): Json<NewDeviceRequest>,
+    Json(body): Json<NewDeviceRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-
     let created_device = data
         .prisma
         .devices()
         .create(
-            new_device.device_number.clone(),
-            user.user_id.clone(),
-            new_device.wetness,
-            new_device.red,
-            new_device.green,
-            new_device.blue,
-            new_device.name.clone(),
-            new_device.trigger,
-            new_device.description.clone(),
+            body.device_number,
+            db::users::UniqueWhereParam::UserIdEquals(user.user_id),
+            vec![
+                db::devices::wetness::set(body.wetness),
+                db::devices::red::set(body.red),
+                db::devices::green::set(body.green),
+                db::devices::blue::set(body.blue),
+                db::devices::name::set(body.name.clone()),
+                db::devices::trigger::set(body.trigger),
+                db::devices::description::set(body.description.clone()),
+                db::devices::img_url::set(body.img_url.clone()),
+            ],
+            
         )
+        .exec()
         .await
         .map_err(|err| {
             (
@@ -275,19 +285,78 @@ pub async fn create_device_handler(
 
     Ok(Json(created_device))
 }
-pub async fn get_device_history_handler(
+
+#[axum::debug_handler]
+pub async fn update_device_handler(
     State(data): State<Arc<AppState>>,
-    Extension(user): Extension<User>,
-    Path(device_id): Path<i32>,
+    Path(device_id): Path<String>,
+    Json(body): Json<NewDeviceRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let created_device = data
+        .prisma
+        .devices()
+        .update(
+            db::devices::device_id::equals(device_id.to_string()),
+            vec![
+                db::devices::wetness::set(body.wetness),
+                db::devices::red::set(body.red),
+                db::devices::green::set(body.green),
+                db::devices::blue::set(body.blue),
+                db::devices::name::set(body.name.clone()),
+                db::devices::trigger::set(body.trigger),
+                db::devices::description::set(body.description.clone()),
+                db::devices::img_url::set(body.img_url.clone()),
+            ],
+            
+        )
+        .exec()
+        .await
+        .map_err(|err| {
+            dbg!(&err);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "db error": err.to_string() })),
+            )
+        })?;
+
+    Ok(Json(created_device))
+}
+pub async fn delete_device_handler(
+    State(data): State<Arc<AppState>>,
+    Path(device_id): Path<String>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    println!("delete device");
     let device = data
         .prisma
         .devices()
-        .find_one(
-            db::devices::device_id
-                ::equals(device_id)
-                .and(db::devices::user_id::equals(user.user_id)),
-        )
+        .delete(db::devices::device_id::equals(device_id.to_string()))
+        .exec()
+        .await
+        .map_err(|err| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "db error": err.to_string() })),
+            )
+        })?;
+        Ok(Json(device))
+    }
+
+pub async fn get_device_history_handler(
+    State(data): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+    Path(device_id): Path<String>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    dbg!(&device_id);
+    dbg!(&user);
+
+    let device = data
+        .prisma
+        .devices()
+        .find_first(vec![
+            db::devices::device_id::equals(device_id.to_string()),
+            db::devices::user_id::equals(user.user_id)
+        ])
+        .exec()
         .await
         .map_err(|err| {
             (
@@ -296,20 +365,15 @@ pub async fn get_device_history_handler(
             )
         })?;
 
-    if let Some(device) = device {
+    if let Some(_device) = device {
         let history = data
             .prisma
             .plant_history()
-            .filter(db::plant_history::device_id::equals(device.id))
-            .limit(100)
-            .select()
-            .map_err(|err| {
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    Json(json!({ "db error": err.to_string() })),
-                )
-            })
-            .await?;
+            .find_many(vec![
+                db::plant_history::device_id::equals(device_id.to_string()),
+            ])
+            .exec()
+            .await;
 
         Ok(Json(history))
     } else {
@@ -319,36 +383,21 @@ pub async fn get_device_history_handler(
         ))
     }
 }
+#[axum::debug_handler]
 pub async fn add_device_history_handler(
     State(data): State<Arc<AppState>>,
-    Extension(user): Extension<User>,
-    Path(device_id): Path<i32>,
+    Path(device_id): Path<String>,
     Json(new_history): Json<NewPlantHistoryRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let device = data
-        .prisma
-        .devices()
-        .find_one(db::devices::device_id::equals(device_id).and(db::devices::user_id::equals(user.user_id)))
-        .await
-        .map_err(|err| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({ "db error": err.to_string() })),
-            )
-        })?;
-
-    if let Some(device) = device {
-        let history = db::NewPlantHistory {
-            device_id: device.id,
-            temperature: new_history.temperature,
-            humidity: new_history.humidity,
-            light: new_history.light,
-        };
-
-        let created_history = data
+    let created_history = data
             .prisma
             .plant_history()
-            .create(&history)
+            .create(
+                new_history.wetness,
+                db::devices::UniqueWhereParam::DeviceIdEquals(device_id.to_string()),
+                vec![],
+            )
+            .exec()
             .await
             .map_err(|err| {
                 (
@@ -358,12 +407,6 @@ pub async fn add_device_history_handler(
             })?;
 
         Ok(Json(created_history))
-    } else {
-        Err((
-            StatusCode::NOT_FOUND,
-            Json(json!({ "error": "device not found" })),
-        ))
-    }
 }
 
 

@@ -12,6 +12,7 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 
 // Function to handle JWT authentication
 function authenticate(credentials) {
@@ -34,6 +35,8 @@ function authenticate(credentials) {
 
 
   export default function SignInSide() {
+    const Navigate = useNavigate();
+    const [resp, setResponse] = useState('');
     const handleSubmit = async (event) => {
       event.preventDefault();
       const data = new FormData(event.currentTarget);
@@ -57,9 +60,10 @@ function authenticate(credentials) {
           localStorage.setItem('token', tokenData.token);
           Cookies.set('token', tokenData.token, { expires: 7 });
           console.log('Authentication successful');
-          // Redirect or perform any other action upon successful authentication
+          Navigate('/MyPlants');
         } else {
           console.error('Authentication failed.');
+          setResponse(response.statusText);
         }
       } catch (error) {
         console.error('Error:', error);
@@ -151,6 +155,9 @@ function authenticate(credentials) {
             </Typography>
           </Box>
         </Box>
+        <Typography component="h6" variant="h2" align="center" color="text.primary" gutterBottom>
+              {resp}
+            </Typography>
       </Grid>
     </Grid>
   );

@@ -24,7 +24,6 @@ pub async fn auth<B>(
     mut req: Request<B>,
     next: Next<B>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
-    dbg!(&cookie_jar);
     let token = cookie_jar
         .get("token")
         .map(|cookie| cookie.value().to_string())

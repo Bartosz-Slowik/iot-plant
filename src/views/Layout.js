@@ -13,8 +13,6 @@ import MenuItem from '@mui/material/MenuItem';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import Container from '@mui/material/Container';
 
-const pages = ['AddPlant', 'MyPlants', 'Store', 'About'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 function Layout() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -41,25 +39,45 @@ function Layout() {
     navigate('/SignIn');
   };
 
+  const pages = [
+    { label: 'My Plants', path: '/MyPlants' },
+    { label: 'NewPlant', path: '/NewPlant' },
+    { label: 'Fake History', path: '/SampleHistory' },
+  ];
+  const settings = [
+   // { label: 'Profile', action: () => {} },
+   // { label: 'Account', action: () => {} },
+  //  { label: 'Dashboard', action: () => {} },
+    { label: 'Logout', action: handleSignOut },
+  ];
+  
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Container>
           <Toolbar>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              color="inherit"
-            >
-              <Avatar
-                alt="logo"
-                src="./images/logo.png"
-                sx={{ width: 50, height: 50 }}
-              />
-            </IconButton>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <IconButton
+                size="large"
+                aria-label="menu"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                color="inherit"
+                onClick={handleOpenNavMenu}
+              >
+                
+              </IconButton>
+              <Tooltip title="IOT-PLANT" placement="bottom">
+                <Avatar
+                  alt="logo"
+                  src="./images/logo.png"
+                  sx={{ width: 50, height: 50, filter: 'brightness(0) invert(1)',mr: 4,  ml: 1, cursor: 'pointer' }}
+                  onClick={handleOpenNavMenu}
+                />
+              </Tooltip>
+            </Box>
+            <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
               IOT-PLANT
             </Typography>
             <Box
@@ -68,27 +86,20 @@ function Layout() {
                 display: { xs: 'none', md: 'flex' },
               }}
             >
-              <Button
-                onClick={() => navigate('/my-plants')}
-                sx={{ my: 2, color: 'white', display: 'block', mr: 2 }}
-              >
-                My Plants
-              </Button>
-              <Button
-                onClick={() => navigate('/plant')}
-                sx={{ my: 2, color: 'white', display: 'block', mr: 2 }}
-              >
-                Plant
-              </Button>
-              <Button
-                onClick={() => navigate('/plant-history')}
-                sx={{ my: 2, color: 'white', display: 'block', mr: 2 }}
-              >
-                Plant History
-              </Button>
+              {pages.map((page) => (
+                <Button
+                  key={page.path}
+                  onClick={() => navigate(page.path)}
+                  sx={{ my: 2, color: 'white', display: 'block', mr: 2 , fontSize: '1.0rem'}}
+                >
+                  {page.label}
+                </Button>
+              ))}
             </Box>
+            
+            
             <IconButton
-              size="large"
+              size="extra-large"
               edge="end"
               aria-label="account of current user"
               aria-haspopup="true"
@@ -103,13 +114,27 @@ function Layout() {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              <MenuItem onClick={handleSignOut}>
-                <Typography textAlign="center">Sign Out</Typography>
-              </MenuItem>
+              {settings.map((setting) => (
+                <MenuItem key={setting.label} onClick={setting.action}>
+                  <Typography textAlign="center">{setting.label}</Typography>
+                </MenuItem>
+              ))}
             </Menu>
           </Toolbar>
         </Container>
       </AppBar>
+      <Menu
+        id="nav-menu"
+        anchorEl={anchorElNav}
+        open={Boolean(anchorElNav)}
+        onClose={handleCloseNavMenu}
+      >
+        {pages.map((page) => (
+          <MenuItem key={page.path} onClick={() => { navigate(page.path); handleCloseNavMenu(); }}>
+            <Typography textAlign="center">{page.label}</Typography>
+          </MenuItem>
+        ))}
+      </Menu>
       <Box sx={{ mt: 8 }}>
         <Outlet />
       </Box>

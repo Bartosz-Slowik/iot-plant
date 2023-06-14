@@ -11,8 +11,12 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Cookies from 'js-cookie';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function SignUp() {
+  const navigate = useNavigate();
+  const [resp, setResponse] = useState('');
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -25,7 +29,7 @@ function SignUp() {
     console.log(userData);
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/register', {
+        const response = await fetch('http://localhost:8000/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,12 +39,11 @@ function SignUp() {
       console.log(response);
       if (response.ok) {
         const tokenData = await response.json();
-        localStorage.setItem('token', tokenData.token);
-        Cookies.set('token', data.token, { expires: 7 }); // Set the token in a cookie that expires in 7 days
-        window.location.href = '/'; 
-        // Redirect or perform any other action
+       // Cookies.set('token', data.token, { expires: 7 }); // Set the token in a cookie that expires in 7 days
+        navigate('/SignIn');
       } else {
         console.error('Sign up failed.');
+        setResponse(response.statusText);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -139,6 +142,9 @@ function SignUp() {
                 </Link>
               </Grid>
             </Grid>
+            <Typography component="h6" variant="h2" align="center" color="text.primary" gutterBottom>
+              {resp}
+            </Typography>
           </Box>
         </Box>
       </Grid>

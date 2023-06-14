@@ -8,41 +8,17 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { SliderPicker } from 'react-color';
 
-function Plant() {
-
-
-  ///
-  const get_me = async () => {
-    console.log(document.token);
-    try {
-      const response = await fetch('http://localhost:8000/api/users/me', {
-        credentials: "include"
-    });
-      const data = await response.json();
-      console.log(data);
-    } catch (error) {
-      console.error(error);
-      // Handle the error here, e.g. by showing an error message to the user
-    }
-  };
-  
-  get_me();
-
-
-
-
-  ///
-
-
+function NewPlant() {
 
   const [plantData, setPlantData] = React.useState({
     name: 'Monstera Deliciosa',
     description:
       'The Monstera Deliciosa is a tropical plant native to Central America. It is known for its large, perforated leaves that have earned it the nickname "Swiss Cheese Plant".',
-    image: 'https://source.unsplash.com/featured/?monstera',
+    img_url: 'https://source.unsplash.com/featured/?monstera',
     wetness: 80,
     rgbColor: { r: 0, g: 128, b: 0 },
-    threshold: 50,
+    trigger: 50,
+    device_number: 1,
   });
 
   const handleInputChange = (event) => {
@@ -53,9 +29,38 @@ function Plant() {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(plantData);
+    const data = new FormData(event.currentTarget);
+    const { r, g, b } = plantData.rgbColor;
+    const plantData2 = {
+      device_number: data.get('device_number'),
+      wetness: parseInt(data.get('wetness')),
+      red: r,
+      green: g,
+      blue: b,
+      name: data.get('name'),
+      trigger: parseInt(data.get('trigger')),
+      description: data.get('description'),
+      img_url: data.get('img_url'),
+    };
+    console.log(plantData2);
+    // Send a POST request to the API to add the new plant
+    const response = await fetch('http://localhost:8000/api/newplant', {
+      credentials: "include",
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(plantData2),
+    });
+    if (response.ok) {
+      console.log('Plant added successfully!');
+      window.location.href = '/MyPlants'; 
+      // Redirect or perform any other action
+    } else {
+      console.error('Failed to add plant', response);
+    }
   };
 
   return (
@@ -73,7 +78,7 @@ function Plant() {
               <CardMedia
                 component="img"
                 height="400"
-                image={plantData.image}
+                image={plantData.img_url}
                 alt={plantData.name}
               />
               <CardContent>
@@ -88,6 +93,15 @@ function Plant() {
                     margin="normal"
                   />
                   <TextField
+                    id="device_number"
+                    name="device_number"
+                    label="device_number"
+                    value={plantData.device_number}
+                    onChange={handleInputChange}
+                    fullWidth
+                    margin="normal"
+                  />
+                  <TextField
                     id="description"
                     name="description"
                     label="Description"
@@ -97,10 +111,10 @@ function Plant() {
                     margin="normal"
                   />
                   <TextField
-                    id="image"
-                    name="image"
-                    label="Image URL"
-                    value={plantData.image}
+                    id="img_url"
+                    name="img_url"
+                    label="image URL"
+                    value={plantData.img_url}
                     onChange={handleInputChange}
                     fullWidth
                     margin="normal"
@@ -116,11 +130,11 @@ function Plant() {
                     margin="normal"
                   />
                   <TextField
-                    id="threshold"
-                    name="threshold"
-                    label="Threshold"
+                    id="trigger"
+                    name="trigger"
+                    label="trigger"
                     type="number"
-                    value={plantData.threshold}
+                    value={plantData.trigger}
                     onChange={handleInputChange}
                     fullWidth
                     margin="normal"
@@ -149,4 +163,4 @@ function Plant() {
   );
 }
 
-export default Plant;
+export default NewPlant;

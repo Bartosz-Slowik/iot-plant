@@ -5,8 +5,10 @@ import SignIn from './views/SignIn';
 import Page404 from './views/Page404';
 import SignUp from './views/SignUp';
 import MyPlants from './views/MyPlants';
-import Plant from './views/Plant';
+import NewPlant from './views/NewPlant';
+import Plants from './views/Plants';
 import PlantHistory from './views/PlantHistory';
+import SampleHistory from './views/SampleHistory';
 
 export default function App() {
   const isAuthenticated = !!localStorage.getItem('token');
@@ -16,11 +18,14 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route index element={<SignIn />} />
+        <Route path="SignIn" element={<SignIn />} />
         <Route path="SignUp" element={<SignUp />} />
         <Route path="/" element={<Layout />}>
           <Route path="MyPlants" element={<MyPlants />} />
-          <Route path="Plant" element={<Plant />} />
-          <Route path="PlantHistory" element={<PlantHistory />} />
+          <Route path="NewPlant" element={<NewPlant />} />
+          <Route path="Plants/:id" element={<Plants />} />
+          <Route path="PlantHistory/:id" element={<PlantHistory />} />
+          <Route path="SampleHistory" element={<SampleHistory />} />
           <Route path="*" element={<Page404 />} />
         </Route>
       </Routes>

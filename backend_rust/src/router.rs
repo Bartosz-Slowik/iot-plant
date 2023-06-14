@@ -34,12 +34,7 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         )
         .route(
             "/api/plant/:id",
-            get(get_device_handler)
-                .route_layer(middleware::from_fn_with_state(app_state.clone(), auth)),
-        )
-        .route(
-            "/api/plant/:id",
-            post(update_device_handler)
+            get(get_device_handler).put(update_device_handler).delete(delete_device_handler)
                 .route_layer(middleware::from_fn_with_state(app_state.clone(), auth)),
         )
         .route(
@@ -54,7 +49,7 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         )
         .route(
             "/api/planthistory/:id",
-            post(add_device_history_handler),
+            post(add_device_history_handler)
         )
         .with_state(app_state)
         

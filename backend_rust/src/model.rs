@@ -13,10 +13,9 @@ pub struct RegisterUserSchema {
     pub firstname: Option<String>,
     pub surname: Option<String>,
 }
-
+#[derive(Debug, Deserialize)]
 pub struct NewDeviceRequest {
     pub device_number: String,
-    pub user_id: String,
     pub wetness: Option<i32>,
     pub red: Option<i64>,
     pub green: Option<i64>,
@@ -24,6 +23,11 @@ pub struct NewDeviceRequest {
     pub name: Option<String>,
     pub trigger: Option<i32>,
     pub description: Option<String>,
+    pub img_url: Option<String>,
+}
+#[derive(Debug, Deserialize)]
+pub struct NewPlantHistoryRequest{
+    pub wetness: i32,
 }
 
 #[derive(Debug, Deserialize)]
