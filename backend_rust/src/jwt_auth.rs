@@ -39,7 +39,7 @@ pub async fn auth<B>(
                     }
                 })
         });
-
+        dbg!(&token);
     let token = token.ok_or_else(|| {
         let json_error = ErrorResponse {
             status: "fail",

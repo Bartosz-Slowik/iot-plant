@@ -2,6 +2,7 @@
 /backend_rust/.env
 /backend_rust/target
 /backend_rust/src/db.rs
+/scraper/node_modules/
 
 # dependencies
 /node_modules
