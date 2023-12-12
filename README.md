@@ -1,6 +1,6 @@
 # iot-plant
 
-Made for 2023 ZDPAI class.
+Part of Engeneering thesis.
 - Its using  React with @MaterialUi
 - Backend is written in rust with axum and Prisma ORM
 - DB is Postgres
