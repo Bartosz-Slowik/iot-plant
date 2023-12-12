@@ -27,7 +27,7 @@ model Devices {
   blue         BigInt?        @default(0)
   name         String?        @db.VarChar(255)
   trigger      Int?
-  description  String?        @db.VarChar(255)
+  description  String?        @db.VarChar(1023)
   img_url      String?        @db.VarChar(255)
   PlantHistory PlantHistory[]
   Users        Users          @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "Devices_Users_user_id_fk")

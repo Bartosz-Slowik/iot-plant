@@ -1,4 +1,5 @@
 mod config;
+mod scrape;
 mod handler;
 mod jwt_auth;
 mod model;

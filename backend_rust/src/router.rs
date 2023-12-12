@@ -8,6 +8,7 @@ use axum::{
 
 use crate::{
     handler::*,
+    scrape::*,
     jwt_auth::auth,
     AppState,
 };
@@ -17,6 +18,8 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         .route("/api/healthchecker", get(health_checker_handler))
         .route("/api/auth/register", post(register_user_handler))
         .route("/api/auth/login", post(login_handler))
+        .route("/api/scrape", post(scrape_plant_info))
+        .route("/api/scrape2", post(scrape_plant_page))
         .route(
             "/api/auth/logout",
             get(logout_handler)

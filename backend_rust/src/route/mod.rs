@@ -1,6 +1,7 @@
 pub mod health;
 pub mod user;
 pub mod plants;
+pub mod scrape;
 
 use axum::{http::StatusCode, response::IntoResponse};
 
