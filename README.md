@@ -1,6 +1,6 @@
 # iot-plant
 
-Part of Engeneering thesis.
+Part of Bsc thesis.
 - Its using  React with @MaterialUi
 - Backend is written in rust with axum and Prisma ORM
 - DB is Postgres
