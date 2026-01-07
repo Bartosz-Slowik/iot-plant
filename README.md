@@ -17,3 +17,5 @@ ERD diagram:
 - To run this app you need to create .env files with db url as well as generate db.rs with prisma
 - To start backend you cargo run
 - To run frontend you start a react server
+
+[![Demo Video](https://github.com/user-attachments/assets/8c9d3bbd-82f4-41d9-894d-09c4c4ddd1d7)](https://photos.app.goo.gl/zBVPSFQ9tVXLgWBGA)
